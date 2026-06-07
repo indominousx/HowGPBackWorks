@@ -11,7 +11,12 @@ from chat_repository import (
     create_chat,
     get_all_chats,
     get_messages,
-    save_message
+    save_message,
+    update_chat_title,
+    get_chat_title,
+    save_document,
+    get_documents,
+    document_exists
 )
 
 
@@ -88,6 +93,24 @@ with st.sidebar:
             st.rerun()
 
 
+    st.divider()
+
+    docs = get_documents(
+        chat_id
+    )
+
+    if docs:
+
+        st.subheader(
+            "Documents"
+        )
+
+        for doc in docs:
+
+            st.markdown(
+                f"📄 {doc[0]}"
+            )
+
 
 st.subheader(
     f"Chat ID: {chat_id[:8]}"
@@ -126,7 +149,16 @@ if st.button("Process Documents"):
         file_paths = []
 
         for file in uploaded_files:
+            if document_exists(
+              chat_id,
+                file.name
+                 ):
 
+             st.warning(
+             f"{file.name} already uploaded"
+                 )
+
+             continue
             save_path = os.path.join(
                 chat_folder,
                 file.name
@@ -144,6 +176,10 @@ if st.button("Process Documents"):
             file_paths.append(
                 save_path
             )
+            save_document(
+             chat_id,
+                 file.name
+                   )
 
         with st.spinner(
             "Loading PDFs..."
@@ -186,7 +222,16 @@ query = st.chat_input(
 
 if query:
 
+    current_title = get_chat_title(
+    chat_id
+          )
 
+    if current_title == "New Chat":
+
+     update_chat_title(
+        chat_id,
+        query[:50]
+     )
 
     save_message(
         chat_id=chat_id,
